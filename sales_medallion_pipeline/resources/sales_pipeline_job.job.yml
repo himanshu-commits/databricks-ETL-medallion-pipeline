@@ -1,0 +1,55 @@
+resources:
+  jobs:
+    sales_pipeline_job:
+      name: sales_pipeline_job
+      tasks:
+        - task_key: Incremental_load
+          disabled: false
+          email_notifications: {}
+          notebook_task:
+            notebook_path: ../src/02_incremental_load.ipynb
+            source: WORKSPACE
+          run_if: ALL_SUCCESS
+          timeout_seconds: 0
+          webhook_notifications: {}
+        - task_key: bronze_to_silver
+          depends_on:
+            - task_key: Incremental_load
+          disabled: false
+          email_notifications: {}
+          notebook_task:
+            notebook_path: ../src/03_bronze_to_silver.ipynb
+            source: WORKSPACE
+          run_if: ALL_SUCCESS
+          timeout_seconds: 0
+          webhook_notifications: {}
+        - task_key: silver_to_gold
+          depends_on:
+            - task_key: bronze_to_silver
+          disabled: false
+          email_notifications: {}
+          notebook_task:
+            notebook_path: ../src/04_silver_to_gold.ipynb
+            source: WORKSPACE
+          run_if: ALL_SUCCESS
+          timeout_seconds: 0
+          webhook_notifications: {}
+        - task_key: update_metadata
+          depends_on:
+            - task_key: silver_to_gold
+          disabled: false
+          email_notifications: {}
+          notebook_task:
+            notebook_path: ../src/05_update_metadata.ipynb
+            source: WORKSPACE
+          run_if: ALL_SUCCESS
+          timeout_seconds: 0
+          webhook_notifications: {}
+      email_notifications:
+        no_alert_for_skipped_runs: false
+      max_concurrent_runs: 1
+      performance_target: PERFORMANCE_OPTIMIZED
+      queue:
+        enabled: true
+      timeout_seconds: 0
+      webhook_notifications: {}
